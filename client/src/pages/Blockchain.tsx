@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BlockDetailsModal from "@/components/modals/BlockDetailsModal";
 import BlockchainVisualization from "@/components/dashboard/BlockchainVisualization";
 import NetworkStatus from "@/components/dashboard/NetworkStatus";
+import { MiningVisualizer } from "@/components/blockchain/MiningVisualizer";
 import { Loader2, Info } from "lucide-react";
 import { getBlockType, formatDate, shortenHash } from "@/lib/utils";
 

@@ -50,15 +50,15 @@ const SidebarFooter = React.forwardRef<
 SidebarFooter.displayName = "SidebarFooter";
 
 const SidebarItem = React.forwardRef<
-  HTMLAnchorElement,
-  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
     active?: boolean;
   }
 >(({ className, active, ...props }, ref) => (
-  <a
+  <div
     ref={ref}
     className={cn(
-      "flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:bg-blue-700/20 transition-colors duration-200",
+      "flex items-center space-x-3 p-3 rounded-lg text-gray-300 hover:bg-blue-700/20 transition-colors duration-200 cursor-pointer",
       {
         "bg-blue-700 text-white": active,
       },
