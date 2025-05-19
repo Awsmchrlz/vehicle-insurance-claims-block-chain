@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -210,6 +211,9 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date of Incident</FormLabel>
+                  <FormDescription>
+                    Date when the incident occurred (immutably recorded on the blockchain)
+                  </FormDescription>
                   <FormControl>
                     <Input 
                       type="date" 
@@ -228,6 +232,9 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Incident Type</FormLabel>
+                  <FormDescription>
+                    Type of incident is verified by all blockchain nodes for consensus
+                  </FormDescription>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -257,6 +264,9 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
+                  <FormDescription>
+                    Detailed description of the incident (stored permanently on the blockchain)
+                  </FormDescription>
                   <FormControl>
                     <Textarea 
                       placeholder="Describe what happened..." 
@@ -277,6 +287,9 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estimated Damage (ZMW)</FormLabel>
+                  <FormDescription>
+                    Claim amount in Zambian Kwacha (verified through blockchain consensus)
+                  </FormDescription>
                   <FormControl>
                     <Input 
                       type="number" 

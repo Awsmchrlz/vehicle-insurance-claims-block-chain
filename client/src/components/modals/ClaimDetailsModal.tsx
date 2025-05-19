@@ -100,7 +100,7 @@ export default function ClaimDetailsModal({
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Date of Incident</div>
-                      <div className="text-sm font-medium">{formatDate(claimData?.claim.incidentDate)}</div>
+                      <div className="text-sm font-medium">{claimData?.claim.incidentDate ? formatDate(claimData.claim.incidentDate) : '-'}</div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Status</div>
@@ -161,7 +161,7 @@ export default function ClaimDetailsModal({
                           </div>
                           <div>
                             <div className="text-xs text-gray-500">Timestamp</div>
-                            <div className="text-sm">{formatDate(claimData?.claim.createdAt)}</div>
+                            <div className="text-sm">{claimData?.claim.createdAt ? formatDate(claimData.claim.createdAt) : '-'}</div>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
