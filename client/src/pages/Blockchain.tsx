@@ -51,6 +51,14 @@ export default function Blockchain() {
           />
         </div>
       </div>
+      
+      {/* Mining Visualizer */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Mining Process</h2>
+        <div className="w-full">
+          <MiningVisualizer />
+        </div>
+      </div>
 
       {/* Blockchain table */}
       <Card>

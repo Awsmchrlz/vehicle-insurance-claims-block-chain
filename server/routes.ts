@@ -7,6 +7,8 @@ import { Block } from "./blockchain/Block";
 import { TransactionFactory, TransactionType } from "./blockchain/Transaction";
 import { z } from "zod";
 import { insertClaimSchema } from "@shared/schema";
+import authRoutes from './authRoutes';
+import { authenticate } from './auth';
 
 // Initialize the blockchain node network
 const nodes = initializeNodeNetwork(blockchain);
@@ -16,6 +18,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // API route prefix
   const apiPrefix = "/api";
+  
+  // Register authentication routes
+  app.use(`${apiPrefix}/auth`, authRoutes);
 
   // Endpoint to get network status (nodes)
   app.get(`${apiPrefix}/nodes`, async (req, res) => {

@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { log } from './vite';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/blockinsure';
+// For this POC, we'll use a local MongoDB URI
+const MONGODB_URI = 'mongodb://localhost:27017/blockinsure';
 
 // Connect to MongoDB
 export async function connectToMongoDB() {
