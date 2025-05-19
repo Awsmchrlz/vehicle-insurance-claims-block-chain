@@ -49,7 +49,15 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
   const { toast } = useToast();
   
   // Fetch policies for the dropdown
-  const { data: policiesData } = useQuery({
+  const { data: policiesData } = useQuery<{policies: Array<{
+    policyId: string;
+    vehicleId: string;
+    startDate: string;
+    endDate: string;
+    coverageType: string;
+    status: string;
+    premium: number;
+  }>}>({
     queryKey: ['/api/policies'],
   });
 
@@ -170,6 +178,9 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Policy ID</FormLabel>
+                  <FormDescription>
+                    Select the insurance policy for the vehicle involved in this claim
+                  </FormDescription>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -181,7 +192,7 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {policiesData?.policies.map((policy: any) => (
+                      {policiesData?.policies?.map((policy) => (
                         <SelectItem key={policy.policyId} value={policy.policyId}>
                           {policy.policyId} ({policy.vehicleId})
                         </SelectItem>

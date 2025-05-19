@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -9,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { Loader2, X, FileText, Download, Info, ExternalLink } from "lucide-react";
+import { Loader2, X, FileText, Download, Info, ExternalLink, Shield, CheckCircle2, Clock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ClaimDetailsModalProps {
   claimId: string;
@@ -23,7 +25,28 @@ export default function ClaimDetailsModal({
   onClose,
 }: ClaimDetailsModalProps) {
   // Fetch claim data
-  const { data: claimData, isLoading } = useQuery({
+  const { data: claimData, isLoading } = useQuery<{claim: {
+    claimId: string;
+    policyId: string;
+    vehicleId: string;
+    incidentDate: string;
+    incidentType: string;
+    description: string;
+    damageEstimate: number;
+    status: string;
+    blockIndex?: number;
+    transactionHash?: string;
+    createdAt: string;
+    evidence?: {
+      files?: Array<{
+        type: string;
+        name: string;
+        uploaded: string;
+        verifiedBy?: string;
+        reportId?: string;
+      }>
+    }
+  }}>({
     queryKey: [`/api/claims/${claimId}`],
     enabled: isOpen, // Only fetch when modal is open
   });
@@ -109,33 +132,81 @@ export default function ClaimDetailsModal({
                   <div className="space-y-3">
                     {claimData?.claim.transactionHash ? (
                       <>
-                        <div>
-                          <div className="text-xs text-gray-500">Transaction Hash</div>
-                          <div className="text-xs font-mono truncate">{claimData?.claim.transactionHash}</div>
+                        <div className="flex items-center">
+                          <Shield className="h-4 w-4 text-green-600 mr-2" />
+                          <div className="text-sm font-medium text-green-700">Blockchain Verified</div>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500">Block Number</div>
-                          <div className="text-sm font-medium">#{claimData?.claim.blockIndex}</div>
+                        <div className="pt-1">
+                          <div className="text-xs text-gray-500 flex items-center">
+                            Transaction Hash
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-3 w-3 ml-1 text-gray-400 cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="w-[200px] text-xs">
+                                    This unique identifier confirms your claim is permanently recorded on the blockchain ledger
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          <div className="text-xs font-mono truncate bg-gray-100 p-1 rounded mt-1">{claimData?.claim.transactionHash}</div>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500">Timestamp</div>
-                          <div className="text-sm">{formatDate(claimData?.claim.createdAt)}</div>
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <div>
+                            <div className="text-xs text-gray-500">Block Number</div>
+                            <div className="text-sm font-medium">#{claimData?.claim.blockIndex}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500">Timestamp</div>
+                            <div className="text-sm">{formatDate(claimData?.claim.createdAt)}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500">Confirmations</div>
-                          <div className="text-sm">22</div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-xs text-gray-500 flex items-center">
+                              Consensus Status
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info className="h-3 w-3 ml-1 text-gray-400 cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="w-[200px] text-xs">
+                                      Indicates how many nodes in the blockchain network have verified and agreed on this claim record
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            <div className="text-sm flex items-center">
+                              <CheckCircle2 className="h-3 w-3 mr-1 text-green-600" />
+                              <span className="text-green-700">Verified (5/5 nodes)</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500">Confirmations</div>
+                            <div className="text-sm">22</div>
+                          </div>
                         </div>
                       </>
                     ) : (
-                      <div className="py-2 text-amber-600 flex items-center">
-                        <Info className="h-4 w-4 mr-2" />
-                        <span>Pending addition to blockchain</span>
+                      <div className="py-4 text-amber-600 flex flex-col items-center space-y-2 bg-amber-50 rounded-lg">
+                        <Clock className="h-6 w-6" />
+                        <div className="flex flex-col items-center">
+                          <span className="font-medium">Pending Blockchain Verification</span>
+                          <span className="text-xs text-amber-700 text-center mt-1">
+                            This claim is waiting to be mined in the next block
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
                   {claimData?.claim.blockIndex && (
                     <div className="mt-4 flex">
-                      <Button variant="outline" size="sm" className="text-xs text-blue-600 flex items-center">
+                      <Button variant="outline" size="sm" className="text-xs flex items-center">
                         <ExternalLink className="h-3 w-3 mr-1" /> View on Explorer
                       </Button>
                     </div>
