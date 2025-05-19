@@ -124,42 +124,54 @@ function SidebarComponent({ currentPath, onItemClick }: SidebarComponentProps) {
         <div className="text-xs text-gray-400 mt-1">Motor Vehicle Insurance POC</div>
       </SidebarHeader>
       <SidebarContent>
-        <Link href="/" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/"}>
-            <LayoutDashboard className="h-5 w-5" />
-            <span>Dashboard</span>
-          </SidebarItem>
-        </Link>
-        <Link href="/claims" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/claims"}>
-            <FileText className="h-5 w-5" />
-            <span>Claims</span>
-          </SidebarItem>
-        </Link>
-        <Link href="/blockchain" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/blockchain"}>
-            <Link2 className="h-5 w-5" />
-            <span>Blockchain</span>
-          </SidebarItem>
-        </Link>
-        <Link href="/explorer" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/explorer"}>
-            <Layers className="h-5 w-5" />
-            <span>Explorer</span>
-          </SidebarItem>
-        </Link>
-        <Link href="/policies" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/policies"}>
-            <ShieldCheck className="h-5 w-5" />
-            <span>Policies</span>
-          </SidebarItem>
-        </Link>
-        <Link href="/references" onClick={onItemClick}>
-          <SidebarItem active={currentPath === "/references"}>
-            <BookOpen className="h-5 w-5" />
-            <span>Academic References</span>
-          </SidebarItem>
-        </Link>
+        <div onClick={onItemClick}>
+          <Link href="/">
+            <SidebarItem active={currentPath === "/"}>
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Dashboard</span>
+            </SidebarItem>
+          </Link>
+        </div>
+        <div onClick={onItemClick}>
+          <Link href="/claims">
+            <SidebarItem active={currentPath === "/claims"}>
+              <FileText className="h-5 w-5" />
+              <span>Claims</span>
+            </SidebarItem>
+          </Link>
+        </div>
+        <div onClick={onItemClick}>
+          <Link href="/blockchain">
+            <SidebarItem active={currentPath === "/blockchain"}>
+              <Link2 className="h-5 w-5" />
+              <span>Blockchain</span>
+            </SidebarItem>
+          </Link>
+        </div>
+        <div onClick={onItemClick}>
+          <Link href="/explorer">
+            <SidebarItem active={currentPath === "/explorer"}>
+              <Layers className="h-5 w-5" />
+              <span>Explorer</span>
+            </SidebarItem>
+          </Link>
+        </div>
+        <div onClick={onItemClick}>
+          <Link href="/policies">
+            <SidebarItem active={currentPath === "/policies"}>
+              <ShieldCheck className="h-5 w-5" />
+              <span>Policies</span>
+            </SidebarItem>
+          </Link>
+        </div>
+        <div onClick={onItemClick}>
+          <Link href="/references">
+            <SidebarItem active={currentPath === "/references"}>
+              <BookOpen className="h-5 w-5" />
+              <span>Academic References</span>
+            </SidebarItem>
+          </Link>
+        </div>
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center space-x-2 text-sm text-gray-400">
