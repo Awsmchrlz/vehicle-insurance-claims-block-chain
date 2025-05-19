@@ -305,33 +305,6 @@ export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
               )}
             />
             
-            <div>
-              <FormLabel className="block mb-1">Evidence Files</FormLabel>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600 justify-center">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
-                    >
-                      <span>Upload files</span>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        multiple
-                        disabled={submitting}
-                        className="sr-only"
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
-                </div>
-              </div>
-            </div>
-            
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-700" />
               <AlertDescription className="text-sm text-blue-800">

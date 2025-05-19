@@ -216,62 +216,6 @@ export default function ClaimDetailsModal({
             </div>
             
             <div>
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Evidence & Documentation</h4>
-                <div className="space-y-3">
-                  {claimData?.claim.evidence?.files ? (
-                    claimData.claim.evidence.files.map((file: any, index: number) => (
-                      <div key={index} className="bg-gray-50 rounded-lg overflow-hidden">
-                        {file.type === 'image' ? (
-                          <>
-                            <img 
-                              src="https://images.unsplash.com/photo-1563341591-ad0a750911cf?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=350" 
-                              alt="Car damage photo" 
-                              className="w-full h-auto"
-                            />
-                            <div className="p-3">
-                              <div className="text-sm font-medium">Damage Photo</div>
-                              <div className="text-xs text-gray-500">Uploaded {formatDate(file.uploaded)}</div>
-                              <div className="mt-2 text-xs flex items-center justify-between">
-                                <Badge className="bg-green-100 text-green-800">Verified</Badge>
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="bg-blue-50 p-4 flex items-center">
-                              <FileText className="text-blue-500 h-6 w-6 mr-3" />
-                              <div>
-                                <div className="text-sm font-medium">{file.name}</div>
-                                <div className="text-xs text-gray-500">1.2 MB - Uploaded {formatDate(file.uploaded)}</div>
-                              </div>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 ml-auto">
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="p-3">
-                              <div className="text-xs flex items-center justify-between">
-                                <Badge className="bg-green-100 text-green-800">
-                                  Verified by {file.verifiedBy}
-                                </Badge>
-                                <div className="text-gray-500">Report ID: {file.reportId}</div>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="bg-gray-50 rounded-lg p-4 text-center text-gray-500">
-                      No evidence files uploaded yet
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-2">Claim Timeline</h4>
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -289,31 +233,16 @@ export default function ClaimDetailsModal({
                       </div>
                     )}
                     
-                    {claimData?.claim.evidence && (
-                      <div className="flex">
-                        <div className="flex-shrink-0 h-4 w-4 mt-0.5 rounded-full bg-blue-500"></div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium">Evidence Verified</div>
-                          <div className="text-xs text-gray-500">{formatDate(claimData?.claim.createdAt)} - 14:30</div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            Documents verified by appropriate authorities on the blockchain.
-                          </div>
+                    <div className="flex">
+                      <div className="flex-shrink-0 h-4 w-4 mt-0.5 rounded-full bg-blue-500"></div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium">Blockchain Verification</div>
+                        <div className="text-xs text-gray-500">{claimData?.claim.createdAt ? formatDate(claimData.claim.createdAt) : '-'} - 14:30</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          Claim verified by multiple nodes on the blockchain network.
                         </div>
                       </div>
-                    )}
-                    
-                    {claimData?.claim.evidence && (
-                      <div className="flex">
-                        <div className="flex-shrink-0 h-4 w-4 mt-0.5 rounded-full bg-blue-500"></div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium">Evidence Submitted</div>
-                          <div className="text-xs text-gray-500">{formatDate(claimData?.claim.createdAt)} - 10:15</div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            Photos and documents submitted to blockchain.
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                     
                     <div className="flex">
                       <div className="flex-shrink-0 h-4 w-4 mt-0.5 rounded-full bg-blue-500"></div>
