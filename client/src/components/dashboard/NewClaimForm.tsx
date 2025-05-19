@@ -40,7 +40,11 @@ const claimFormSchema = insertClaimSchema.extend({
 
 type ClaimFormValues = z.infer<typeof claimFormSchema>;
 
-export default function NewClaimForm() {
+interface NewClaimFormProps {
+  onSuccess?: () => void;
+}
+
+export default function NewClaimForm({ onSuccess }: NewClaimFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   
@@ -100,8 +104,29 @@ export default function NewClaimForm() {
       // Show success message
       toast({
         title: "Claim Submitted Successfully",
-        description: `Claim ID: ${result.claim.claimId} has been recorded on the blockchain.`,
+        description: `Claim ID: ${result.claim.claimId} has been recorded. Mining to blockchain...`,
       });
+      
+      // Add to blockchain
+      try {
+        // Mine a new block with this claim transaction
+        await fetch('/api/mine', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        toast({
+          title: "Blockchain Updated",
+          description: "Your claim has been successfully added to the blockchain ledger.",
+        });
+      } catch (error) {
+        console.error("Error mining block:", error);
+        toast({
+          variant: "default",
+          title: "Note",
+          description: "Claim submitted, will be added to blockchain in next mining cycle.",
+        });
+      }
       
       // Reset form
       form.reset({
@@ -111,6 +136,11 @@ export default function NewClaimForm() {
         description: "",
         damageEstimate: 0,
       });
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Error submitting claim:", error);
       toast({

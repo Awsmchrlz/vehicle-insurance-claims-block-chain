@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClaimDetailsModal from "@/components/modals/ClaimDetailsModal";
-import NewClaimForm from "@/components/dashboard/NewClaimForm";
+import NewClaimDialog from "@/components/dashboard/NewClaimDialog";
 import { formatDate, getStatusColor } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
@@ -21,7 +21,18 @@ export default function Claims() {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
 
   // Fetch all claims
-  const { data: claimsData, isLoading } = useQuery({
+  const { data: claimsData, isLoading } = useQuery<{claims: Array<{
+    claimId: string;
+    policyId: string;
+    vehicleId: string;
+    incidentDate: string;
+    incidentType: string;
+    description: string;
+    damageEstimate: number;
+    status: string;
+    blockIndex?: number;
+    transactionHash?: string;
+  }>}>({
     queryKey: ['/api/claims'],
   });
 
@@ -62,7 +73,7 @@ export default function Claims() {
               <TabsTrigger value="processing">Processing</TabsTrigger>
               <TabsTrigger value="pending_evidence">Pending Evidence</TabsTrigger>
             </TabsList>
-            <Button>Submit New Claim</Button>
+            <NewClaimDialog />
           </div>
 
           <TabsContent value="all">
