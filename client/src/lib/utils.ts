@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Format date to a readable string
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | undefined): string {
   if (!date) return "";
   const d = date instanceof Date ? date : new Date(date);
   return d.toLocaleDateString("en-US", {
