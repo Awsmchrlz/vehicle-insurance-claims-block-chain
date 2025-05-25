@@ -1,7 +1,53 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { Gateway, Wallets } from "fabric-network";
+import * as fs from "fs";
+import * as path from "path";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ------------------------------
+// Fabric Network Setup
+// ------------------------------
+async function connectToFabric() {
+  try {
+    const ccpPath = path.resolve(__dirname, "..","server" ,"fabric", "connection.json");
+    const ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
+
+    const walletPath = path.resolve(__dirname, "..", "server","fabric", "wallet");
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
+
+    const identityLabel = "admin";
+
+    const identity = await wallet.get(identityLabel);
+    if (!identity) {
+        throw new Error('Admin identity not found in wallet');
+    }
+    const gateway = new Gateway();
+    await gateway.connect(ccp, {
+      wallet,
+      identity: identityLabel,
+      discovery: { enabled: false, asLocalhost: true },
+    });
+
+    const network = await gateway.getNetwork("mychannel");
+    const contract = network.getContract("mycc");
+
+    log("✅ Connected to Hyperledger Fabric");
+    return contract;
+  } catch (error) {
+    log(`❌ Error connecting to Fabric: ${(error as Error).message}`);
+    return null;
+  }
+}
+
+// ------------------------------
+// Express App Setup
+// ------------------------------
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -36,35 +82,39 @@ app.use((req, res, next) => {
   next();
 });
 
+// ------------------------------
+// Boot Application
+// ------------------------------
+import {enrollAdmin } from './fabric/enrollAdmin';
+
+import {enrollAppUser } from './fabric/enrollAppUser';
+
 (async () => {
+    enrollAdmin();
+    enrollAppUser().catch((e) => console.error("❌ Failed to enroll appUser:", e));
+
+  const contract = await connectToFabric();
+  app.set("fabricContract", contract); // Optional: store globally on the app
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = 5002;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+    log(`🚀 App running on port ${port}`);
   });
 })();
+
+
