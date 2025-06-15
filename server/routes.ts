@@ -1,261 +1,151 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { blockchain } from "./blockchain/Blockchain";
-import { initializeNodeNetwork } from "./blockchain/Node";
-import { Block } from "./blockchain/Block";
-import { TransactionFactory, TransactionType } from "./blockchain/Transaction";
-import { z } from "zod";
 import { insertClaimSchema } from "@shared/schema";
 import authRoutes from './authRoutes';
 import { authenticate } from './auth';
-
-// Future: Import Fabric SDK components (will integrate when Hyperledger Fabric is set up)
-// import { submitTransaction } from './fabric/fabricClient';
-
-// Initialize the blockchain node network
-const nodes = initializeNodeNetwork(blockchain);
+import { log } from "./vite";
+import { submitTransaction, evaluateTransaction } from "./fabric/fabricClient";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   const apiPrefix = "/api";
 
-  // Register auth routes
+  // -----------------------
+  // AUTH ROUTES
+  // -----------------------
   app.use(`${apiPrefix}/auth`, authRoutes);
 
-  // --- Blockchain Network Info Endpoints ---
-
-  app.get(`${apiPrefix}/nodes`, async (req, res) => {
-    try {
-      const networkNodes = await storage.getNodes();
-      res.json({ nodes: networkNodes });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch nodes" });
-    }
+  // -----------------------
+  // USERS
+  // -----------------------
+  app.post(`${apiPrefix}/users`, async (req, res) => {
+    log("👤 Registering new user:", req.body);
+    const tx = await submitTransaction("CreateUser", [
+      req.body.username,
+      req.body.role,
+      req.body.email,
+      req.body.nrc
+    ]);
+    res.status(201).json({ message: "User created", tx });
   });
 
-  app.get(`${apiPrefix}/blockchain`, async (req, res) => {
-    try {
-      const blocks = await storage.getBlocks();
-      res.json({ blocks });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch blockchain" });
-    }
+  app.get(`${apiPrefix}/users/role/:role`, async (req, res) => {
+    const role = req.params.role;
+    const users = await evaluateTransaction("GetUsersByRole", [role]);
+    res.json({ users: JSON.parse(users) });
   });
 
-  app.get(`${apiPrefix}/blocks/:index`, async (req, res) => {
-    const index = parseInt(req.params.index);
-    if (isNaN(index)) return res.status(400).json({ error: "Invalid block index" });
-
-    try {
-      const block = await storage.getBlockByIndex(index);
-      if (!block) return res.status(404).json({ error: "Block not found" });
-      res.json({ block });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch block" });
-    }
+  app.get(`${apiPrefix}/users/:id`, async (req, res) => {
+    const user = await evaluateTransaction("GetUserById", [req.params.id]);
+    res.json({ user: JSON.parse(user) });
   });
 
-  app.get(`${apiPrefix}/blocks/hash/:hash`, async (req, res) => {
-    try {
-      const block = await storage.getBlockByHash(req.params.hash);
-      if (!block) return res.status(404).json({ error: "Block not found" });
-      res.json({ block });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch block" });
-    }
+  // -----------------------
+  // VEHICLES
+  // -----------------------
+  app.post(`${apiPrefix}/vehicles`, async (req, res) => {
+    const { vehicleId, make, model, year, licensePlate, owner } = req.body;
+    const tx = await submitTransaction("RegisterVehicle", [
+      vehicleId, make, model, String(year), licensePlate, owner
+    ]);
+    res.status(201).json({ message: "Vehicle registered", tx });
   });
 
-  // --- Policy APIs ---
-
-  app.get(`${apiPrefix}/policies`, async (req, res) => {
-    try {
-      const policies = await storage.getPolicies();
-      res.json({ policies });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch policies" });
-    }
+  app.get(`${apiPrefix}/vehicles/:id`, async (req, res) => {
+    const vehicle = await evaluateTransaction("GetVehicleById", [req.params.id]);
+    res.json({ vehicle: JSON.parse(vehicle) });
   });
 
-  app.get(`${apiPrefix}/policies/:policyId`, async (req, res) => {
-    try {
-      const policy = await storage.getPolicyByPolicyId(req.params.policyId);
-      if (!policy) return res.status(404).json({ error: "Policy not found" });
-      res.json({ policy });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch policy" });
-    }
+  // -----------------------
+  // POLICIES
+  // -----------------------
+  app.post(`${apiPrefix}/policies`, async (req, res) => {
+    const { policyId, vehicleId, coverageType, premium, startDate, endDate, status } = req.body;
+    const tx = await submitTransaction("CreatePolicy", [
+      policyId, vehicleId, coverageType, String(premium), startDate, endDate, status
+    ]);
+    res.status(201).json({ message: "Policy created", tx });
   });
 
-  // --- Vehicle API ---
-
-  app.get(`${apiPrefix}/vehicles`, async (req, res) => {
-    try {
-      const vehicles = await storage.getVehicles();
-      res.json({ vehicles });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch vehicles" });
-    }
+  app.get(`${apiPrefix}/policies/user/:userId`, async (req, res) => {
+    const policies = await evaluateTransaction("GetPoliciesByUserId", [req.params.userId]);
+    res.json({ policies: JSON.parse(policies) });
   });
 
-  // --- Claim APIs ---
-
-  app.get(`${apiPrefix}/claims`, async (req, res) => {
-    try {
-      const claims = await storage.getClaims();
-      res.json({ claims });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch claims" });
-    }
-  });
-
-  app.get(`${apiPrefix}/claims/recent/:limit`, async (req, res) => {
-    try {
-      const limit = parseInt(req.params.limit) || 5;
-      const claims = await storage.getClaimsWithLimit(limit);
-      res.json({ claims });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch recent claims" });
-    }
-  });
-
-  app.get(`${apiPrefix}/claims/:claimId`, async (req, res) => {
-    try {
-      const claim = await storage.getClaimByClaimId(req.params.claimId);
-      if (!claim) return res.status(404).json({ error: "Claim not found" });
-      res.json({ claim });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch claim" });
-    }
-  });
-
+  // -----------------------
+  // CLAIMS
+  // -----------------------
   app.post(`${apiPrefix}/claims`, async (req, res) => {
-    try {
-      const result = insertClaimSchema.safeParse(req.body);
-      if (!result.success) return res.status(400).json({ error: "Invalid claim data", details: result.error });
-
-      const claim = await storage.createClaim(result.data);
-
-      // --- Blockchain integration ---
-      const transactionHash = blockchain.createClaimTransaction({
-        claimId: claim.claimId,
-        policyId: claim.policyId,
-        vehicleId: claim.vehicleId,
-        dateOfIncident: new Date(claim.incidentDate),
-        description: claim.description,
-        damageAmount: claim.damageEstimate,
-        status: claim.status
-      });
-
-      const newBlock = blockchain.minePendingTransactions();
-
-      if (newBlock) {
-        await storage.updateClaimBlockInfo(claim.claimId, newBlock.index, transactionHash);
-
-        // Broadcast to other nodes
-        for (const [_, node] of nodes) {
-          node.broadcastBlock(newBlock);
-        }
-
-        const updatedClaim = await storage.getClaimByClaimId(claim.claimId);
-        res.status(201).json({
-          claim: updatedClaim,
-          message: "Claim submitted and recorded on blockchain",
-          blockIndex: newBlock.index,
-          blockHash: newBlock.hash
-        });
-      } else {
-        res.status(201).json({
-          claim,
-          message: "Claim submitted but not yet recorded on blockchain"
-        });
-      }
-
-      // 🔁 Future Hyperledger Fabric support:
-      // await submitTransaction('CreateClaim', [claim.claimId, claim.policyId, claim.vehicleId, ...])
-
-    } catch (error) {
-      res.status(500).json({ error: "Failed to submit claim", details: error });
+    const result = insertClaimSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ error: "Invalid claim", details: result.error });
     }
+
+    const {
+      claimId, policyId, vehicleId, incidentDate,
+      incidentType, description, damageEstimate, status
+    } = result.data;
+
+    const tx = await submitTransaction("CreateClaim", [
+      claimId, policyId, vehicleId, incidentDate,
+      incidentType, description, String(damageEstimate), status
+    ]);
+    log("✅ Fabric TX: CreateClaim", tx);
+    res.status(201).json({ message: "Claim submitted", tx });
   });
 
-  // --- Stats API ---
-
-  app.get(`${apiPrefix}/stats`, async (req, res) => {
-    try {
-      const [policies, claims, blocks, nodes] = await Promise.all([
-        storage.getPolicies(),
-        storage.getClaims(),
-        storage.getBlocks(),
-        storage.getNodes()
-      ]);
-
-      const activeClaims = claims.filter(claim =>
-        claim.status !== 'settled' && claim.status !== 'rejected'
-      );
-
-      res.json({
-        totalPolicies: policies.length,
-        activeClaims: activeClaims.length,
-        blocksInChain: blocks.length,
-        activeNodes: nodes.filter(node => node.status === 'active').length
-      });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch statistics" });
-    }
+  app.get(`${apiPrefix}/claims`, async (_req, res) => {
+    const claims = await evaluateTransaction("GetAllClaims", []);
+    res.json({ claims: JSON.parse(claims) });
   });
 
-  // --- Consensus Status (simulated) ---
-
-  app.get(`${apiPrefix}/consensus`, async (req, res) => {
-    try {
-      const networkNodes = await storage.getNodes();
-      const lastConsensusTime = new Date();
-      lastConsensusTime.setMinutes(lastConsensusTime.getMinutes() - 2);
-
-      res.json({
-        nodeCount: networkNodes.length,
-        activeNodes: networkNodes.filter(node => node.status === 'active').length,
-        consensusAchieved: true,
-        lastConsensusTime: lastConsensusTime.toISOString(),
-        chainValid: blockchain.isChainValid()
-      });
-    } catch {
-      res.status(500).json({ error: "Failed to fetch consensus status" });
-    }
+  app.get(`${apiPrefix}/claims/:id`, async (req, res) => {
+    const claim = await evaluateTransaction("GetClaimById", [req.params.id]);
+    res.json({ claim: JSON.parse(claim) });
   });
 
-  // --- Simulate Mining (for demo/academic use) ---
+  app.patch(`${apiPrefix}/claims/:id/assign/:adjusterId`, async (req, res) => {
+    const tx = await submitTransaction("AssignAdjuster", [
+      req.params.id, req.params.adjusterId
+    ]);
+    res.json({ message: "Adjuster assigned", tx });
+  });
 
-  app.post(`${apiPrefix}/mine`, async (req, res) => {
-    try {
-      if (blockchain.pendingTransactions.length === 0) {
-        blockchain.addTransaction(
-          TransactionFactory.createGenesisTransaction("Demonstration transaction for academic purposes")
-        );
-      }
+  app.patch(`${apiPrefix}/claims/:id/review`, async (req, res) => {
+    const { status, reviewedBy } = req.body;
+    const tx = await submitTransaction("ReviewClaim", [
+      req.params.id, status, reviewedBy
+    ]);
+    res.json({ message: "Claim reviewed", tx });
+  });
 
-      const newBlock = blockchain.minePendingTransactions();
-      if (!newBlock) return res.status(400).json({ error: "Failed to mine new block" });
+  app.patch(`${apiPrefix}/claims/:id/repair`, async (req, res) => {
+    const tx = await submitTransaction("ConfirmRepair", [req.params.id]);
+    res.json({ message: "Repair confirmed", tx });
+  });
 
-      await storage.createBlock({
-        index: newBlock.index,
-        timestamp: newBlock.timestamp,
-        previousHash: newBlock.previousHash,
-        hash: newBlock.hash,
-        data: newBlock.data,
-        nonce: newBlock.nonce,
-        merkleRoot: newBlock.merkleRoot
-      });
+  // -----------------------
+  // BLOCKCHAIN + NODES
+  // -----------------------
+  app.get(`${apiPrefix}/blockchain/blocks`, async (_req, res) => {
+    const blocks = await evaluateTransaction("GetAllBlocks", []);
+    res.json({ blocks: JSON.parse(blocks) });
+  });
 
-      for (const [_, node] of nodes) {
-        node.broadcastBlock(newBlock);
-      }
+  app.get(`${apiPrefix}/blockchain/nodes`, async (_req, res) => {
+    const nodes = await evaluateTransaction("GetAllNodes", []);
+    res.json({ nodes: JSON.parse(nodes) });
+  });
 
-      res.json({ message: "New block mined successfully", block: newBlock });
-    } catch {
-      res.status(500).json({ error: "Mining operation failed" });
-    }
+  // -----------------------
+  // GARAGE / ADJUSTER
+  // -----------------------
+  app.post(`${apiPrefix}/adjustments/:claimId`, async (req, res) => {
+    const { report, amount, garageId } = req.body;
+    const tx = await submitTransaction("SubmitAdjustmentReport", [
+      req.params.claimId, report, String(amount), garageId
+    ]);
+    res.status(201).json({ message: "Adjustment submitted", tx });
   });
 
   return httpServer;

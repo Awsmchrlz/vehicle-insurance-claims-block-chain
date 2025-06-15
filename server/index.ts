@@ -91,7 +91,7 @@ import {enrollAppUser } from './fabric/enrollAppUser';
 
 (async () => {
     enrollAdmin();
-    enrollAppUser().catch((e) => console.error("❌ Failed to enroll appUser:", e));
+//     enrollAppUser().catch((e) => console.error("❌ Failed to enroll appUser:", e));
 
   const contract = await connectToFabric();
   app.set("fabricContract", contract); // Optional: store globally on the app
@@ -116,5 +116,3 @@ import {enrollAppUser } from './fabric/enrollAppUser';
     log(`🚀 App running on port ${port}`);
   });
 })();
-
-

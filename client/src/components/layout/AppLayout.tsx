@@ -1,16 +1,25 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarItem } from "@/components/ui/sidebar";
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Link2, 
-  Layers, 
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarItem
+} from "@/components/ui/sidebar";
+import {
+  LayoutDashboard,
+  FileText,
+  Link2,
+  Layers,
   ShieldCheck,
   BookOpen,
   Menu,
   Search,
-  Bell
+  Bell,
+  Users,
+  Wrench,
+  Building2
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -38,8 +47,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <header className="bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center md:hidden">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="text-gray-600 hover:text-gray-900"
                 onClick={toggleMobileMenu}
               >
@@ -53,9 +62,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-4 w-4 text-gray-400" />
                   </div>
-                  <input 
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
-                    placeholder="Search claims, policies, or blocks..." 
+                  <input
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Search claims, policies, or blocks..."
                     type="search"
                   />
                 </div>
@@ -68,12 +77,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <div className="ml-3 relative">
                 <div className="flex items-center">
                   <button type="button" className="max-w-xs flex items-center text-sm rounded-full focus:outline-none">
-                    <img 
-                      className="h-8 w-8 rounded-full" 
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-                      alt="User Avatar" 
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
+                      alt="User Avatar"
                     />
-                    <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">Admin User</span>
+                    <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">Admin</span>
                   </button>
                 </div>
               </div>
@@ -84,13 +93,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden fixed inset-0 z-40 flex">
-            {/* Overlay */}
-            <div 
+            <div
               className="fixed inset-0 bg-gray-600 bg-opacity-75"
               onClick={toggleMobileMenu}
             ></div>
-            
-            {/* Menu */}
             <div className="relative flex-1 flex flex-col max-w-xs w-full bg-primary-950 z-50">
               <div className="pt-5 pb-4">
                 <SidebarComponent currentPath={location} onItemClick={toggleMobileMenu} />
@@ -121,64 +127,26 @@ function SidebarComponent({ currentPath, onItemClick }: SidebarComponentProps) {
           <Link2 className="h-6 w-6" />
           <span className="text-xl font-semibold">BlockInsure</span>
         </div>
-        <div className="text-xs text-gray-400 mt-1">Motor Vehicle Insurance POC</div>
+        <div className="text-xs text-gray-400 mt-1">Motor Vehicle Insurance</div>
       </SidebarHeader>
       <SidebarContent>
-        <div onClick={onItemClick}>
-          <Link href="/">
-            <SidebarItem active={currentPath === "/"}>
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Dashboard</span>
-            </SidebarItem>
-          </Link>
-        </div>
-        <div onClick={onItemClick}>
-          <Link href="/claims">
-            <SidebarItem active={currentPath === "/claims"}>
-              <FileText className="h-5 w-5" />
-              <span>Claims</span>
-            </SidebarItem>
-          </Link>
-        </div>
-        <div onClick={onItemClick}>
-          <Link href="/blockchain">
-            <SidebarItem active={currentPath === "/blockchain"}>
-              <Link2 className="h-5 w-5" />
-              <span>Blockchain</span>
-            </SidebarItem>
-          </Link>
-        </div>
-        <div onClick={onItemClick}>
-          <Link href="/explorer">
-            <SidebarItem active={currentPath === "/explorer"}>
-              <Layers className="h-5 w-5" />
-              <span>Explorer</span>
-            </SidebarItem>
-          </Link>
-        </div>
-        <div onClick={onItemClick}>
-          <Link href="/policies">
-            <SidebarItem active={currentPath === "/policies"}>
-              <ShieldCheck className="h-5 w-5" />
-              <span>Policies</span>
-            </SidebarItem>
-          </Link>
-        </div>
-        <div onClick={onItemClick}>
-          <Link href="/references">
-            <SidebarItem active={currentPath === "/references"}>
-              <BookOpen className="h-5 w-5" />
-              <span>Academic References</span>
-            </SidebarItem>
-          </Link>
-        </div>
+        <div onClick={onItemClick}><Link href="/"><SidebarItem active={currentPath === "/"}><LayoutDashboard className="h-5 w-5" /><span>Dashboard</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/claims"><SidebarItem active={currentPath === "/claims"}><FileText className="h-5 w-5" /><span>Claims</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/policies"><SidebarItem active={currentPath === "/policies"}><ShieldCheck className="h-5 w-5" /><span>Policies</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/vehicles"><SidebarItem active={currentPath === "/vehicles"}><Layers className="h-5 w-5" /><span>Vehicles</span></SidebarItem></Link></div>
+         <div onClick={onItemClick}><Link href="/users"><SidebarItem active={currentPath === "/users"}><Users className="h-5 w-5" /><span>Users</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/adjuster"><SidebarItem active={currentPath === "/adjuster"}><Wrench className="h-5 w-5" /><span>Garage Panel</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/insurer"><SidebarItem active={currentPath === "/insurer"}><Building2 className="h-5 w-5" /><span>Insurance Panel</span></SidebarItem></Link></div>
+        <div onClick={onItemClick}><Link href="/blockchain"><SidebarItem active={currentPath === "/blockchain"}><Link2 className="h-5 w-5" /><span>Blockchain</span></SidebarItem></Link></div>
+       <div onClick={onItemClick}><Link href="/references"><SidebarItem active={currentPath === "/references"}><BookOpen className="h-5 w-5" /><span>References</span></SidebarItem></Link></div>
+
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center space-x-2 text-sm text-gray-400">
           <div className="h-5 w-5 flex items-center justify-center">
             <BookOpen className="h-4 w-4" />
           </div>
-          <span>Academic Project POC v1.0</span>
+          <span>POC v1.0</span>
         </div>
       </SidebarFooter>
     </Sidebar>
