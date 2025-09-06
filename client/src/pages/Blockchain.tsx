@@ -8,6 +8,8 @@ import BlockDetailsModal from "@/components/modals/BlockDetailsModal";
 import BlockchainVisualization from "@/components/dashboard/BlockchainVisualization";
 import NetworkStatus from "@/components/dashboard/NetworkStatus";
 import { MiningVisualizer } from "@/components/blockchain/MiningVisualizer";
+import FabricConnection from "@/components/blockchain/FabricConnection";
+import BlockchainTester from "@/components/blockchain/BlockchainTester";
 import { Loader2, Info } from "lucide-react";
 import { getBlockType, formatDate, shortenHash } from "@/lib/utils";
 
@@ -53,6 +55,16 @@ export default function Blockchain() {
         </div>
       </div>
       
+      {/* Fabric Network Connection */}
+      <div className="mb-6">
+        <FabricConnection />
+      </div>
+
+      {/* Blockchain Transaction Tester */}
+      <div className="mb-6">
+        <BlockchainTester />
+      </div>
+
       {/* Mining Visualizer */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Mining Process</h2>

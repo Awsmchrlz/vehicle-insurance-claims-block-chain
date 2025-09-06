@@ -18,7 +18,7 @@ export default function Explorer() {
 
   // Fetch blocks for display
   const { data: blocksData, isLoading: blocksLoading } = useQuery({
-    queryKey: ['/api/blockchain'],
+    queryKey: ['/api/'],
   });
 
   const handleSearch = () => {
@@ -312,7 +312,7 @@ export default function Explorer() {
           
           <div className="mt-6 text-center">
             <Button variant="outline" asChild>
-              <a href="/blockchain">View All Blocks</a>
+              <a href="/">View All Blocks</a>
             </Button>
           </div>
         </CardContent>

@@ -85,16 +85,17 @@ app.use((req, res, next) => {
 // ------------------------------
 // Boot Application
 // ------------------------------
-import {enrollAdmin } from './fabric/enrollAdmin';
-
-import {enrollAppUser } from './fabric/enrollAppUser';
+import { testConnection } from './fabric/fabricClient';
 
 (async () => {
-    enrollAdmin();
-//     enrollAppUser().catch((e) => console.error("❌ Failed to enroll appUser:", e));
-
-  const contract = await connectToFabric();
-  app.set("fabricContract", contract); // Optional: store globally on the app
+  // Test Fabric connection on startup
+  console.log('🔗 Testing Fabric network connection...');
+  const isConnected = await testConnection();
+  if (isConnected) {
+    console.log('✅ Fabric network connection successful');
+  } else {
+    console.log('⚠️ Fabric network connection failed - running in development mode');
+  }
 
   const server = await registerRoutes(app);
 
@@ -112,7 +113,7 @@ import {enrollAppUser } from './fabric/enrollAppUser';
   }
 
   const port = 5002;
-  server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+  server.listen(port, '127.0.0.1', () => {
     log(`🚀 App running on port ${port}`);
   });
 })();
