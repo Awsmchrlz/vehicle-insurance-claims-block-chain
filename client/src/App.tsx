@@ -10,6 +10,10 @@ import Claims from "@/pages/Claims";
 import Blockchain from "@/pages/Blockchain";
 import Explorer from "@/pages/Explorer";
 import Policies from "@/pages/Policies";
+import Vehicles from "@/pages/Vehicles";
+import Garage from "@/pages/Garage";
+import Insurer from "@/pages/Insurer";
+import ZambiaPolice from "@/pages/ZambiaPolice";
 import References from "@/pages/References";
 
 function Router() {
@@ -17,9 +21,12 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/claims" component={Claims} />
-      <Route path="/blockchain" component={Blockchain} />
+      <Route path="/police" component={ZambiaPolice} />
       <Route path="/explorer" component={Explorer} />
       <Route path="/policies" component={Policies} />
+      <Route path="/vehicles" component={Vehicles} />
+      <Route path="/garages" component={Garage} />
+      <Route path="/insurer" component={Insurer} />
       <Route path="/references" component={References} />
       <Route component={NotFound} />
     </Switch>

@@ -59,22 +59,23 @@ export function getBlockType(block: any): { type: string; color: string } {
 }
 
 // Get status color class
-export function getStatusColor(status: string): string {
-  switch (status.toLowerCase()) {
+export function getStatusColor(status: string | null | undefined): string {
+  const s = status?.toLowerCase() || "unknown"; // Fallback to "unknown" if status is null/undefined
+  switch (s) {
     case "active":
     case "approved":
-    case "completed":
-    case "verified":
       return "bg-green-100 text-green-800";
-    case "processing":
-    case "syncing":
-      return "bg-gray-100 text-gray-800";
-    case "pending_evidence":
-    case "pending evidence":
-      return "bg-amber-100 text-amber-800";
-    case "investigation":
+    case "under_review":
+      return "bg-yellow-100 text-yellow-800";
     case "rejected":
       return "bg-red-100 text-red-800";
+    case "suspended":
+      return "bg-orange-100 text-orange-800";
+    case "submitted":
+      return "bg-gray-100 text-gray-800";
+    case "repaired":
+      return "bg-blue-600 text-white";
+    case "unknown":
     default:
       return "bg-gray-100 text-gray-800";
   }

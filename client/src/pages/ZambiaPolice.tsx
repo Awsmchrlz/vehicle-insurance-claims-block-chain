@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ToastProvider,
@@ -23,9 +23,8 @@ import {
   ToastDescription,
   ToastClose,
 } from "@/components/ui/toast";
-import NewClaimForm from "@/components/dashboard/NewClaimForm";
-import ClaimDetailsModal from "@/components/modals/ClaimDetailsModal";
-import { Loader2, Plus, Info } from "lucide-react";
+import AddEvidenceModal from "@/components/modals/AddEvidenceModal";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ToastMessage {
@@ -47,9 +46,9 @@ interface Claim {
   status: string | null;
 }
 
-export default function Claims() {
+export default function ZambiaPolice() {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
-  const [isCreateClaimDialogOpen, setIsCreateClaimDialogOpen] = useState(false);
+  const [isAddEvidenceModalOpen, setIsAddEvidenceModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const queryClient = useQueryClient();
 
@@ -71,16 +70,16 @@ export default function Claims() {
       const response = await fetch("/api/claims");
       if (!response.ok) throw new Error(`Failed to fetch claims: ${response.statusText}`);
       const data = await response.json();
-      // Normalize claimStatus to status
+      console.log("ZambiaPolice API response:", data);
       const normalizedClaims = data.claims.map((claim: any) => ({
-        claimId: claim.claimId,
-        policyId: claim.policyId,
-        vehicleId: claim.vehicleId,
+        claimId: claim.claimId || "N/A",
+        policyId: claim.policyId || "N/A",
+        vehicleId: claim.vehicleId || "N/A",
         damageEvidence: claim.damageEvidence || null,
-        garageId: claim.garageId,
-        billId: claim.billId,
+        garageId: claim.garageId || "N/A",
+        billId: claim.billId || "N/A",
         discrepancyReason: claim.discrepancyReason || null,
-        repaired: claim.repaired || false,
+        repaired: claim.repaired ?? false,
         status: claim.claimStatus || claim.status || null,
       }));
       return { claims: normalizedClaims };
@@ -89,12 +88,14 @@ export default function Claims() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const handleOpenClaimDetails = (claimId: string) => {
+  const handleOpenAddEvidence = (claimId: string) => {
     setSelectedClaimId(claimId);
+    setIsAddEvidenceModalOpen(true);
   };
 
-  const handleCloseClaimDetails = () => {
+  const handleCloseAddEvidence = () => {
     setSelectedClaimId(null);
+    setIsAddEvidenceModalOpen(false);
   };
 
   // Filter claims by status
@@ -106,7 +107,7 @@ export default function Claims() {
     );
   };
 
-  // Status badge function (aligned with Garage.tsx)
+  // Status badge function
   const getStatusBadge = (status: string | null) => {
     const s = status?.toUpperCase() || "UNKNOWN";
     const styles = {
@@ -126,8 +127,8 @@ export default function Claims() {
 
   if (error) {
     return (
-      <Card className="shadow-lg">
-        <CardContent className="p-4">
+      <Card className="shadow-lg mt-8 mx-4">
+        <CardContent className="p-6">
           <div className="text-red-600 text-center text-sm">
             Error fetching claims: {(error as Error).message}
           </div>
@@ -146,40 +147,24 @@ export default function Claims() {
 
   return (
     <ToastProvider>
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Insurance Claims</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage motor vehicle insurance claims securely on the blockchain
-            </p>
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="flex items-center gap-3">
+
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Zambia Police Service</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Submit and review evidence for motor vehicle insurance claims
+              </p>
+            </div>
           </div>
-          <Dialog open={isCreateClaimDialogOpen} onOpenChange={setIsCreateClaimDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="h-4 w-4 mr-2" /> Create Claim
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg sm:max-w-xl">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-medium">Create New Claim</DialogTitle>
-              </DialogHeader>
-              <NewClaimForm
-                onSuccess={() => {
-                  setIsCreateClaimDialogOpen(false);
-                  queryClient.invalidateQueries({ queryKey: ["/api/claims"] });
-                  addToast("Success", "Claim created successfully!", "default");
-                }}
-              />
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="bg-gray-100 p-1 rounded-md flex flex-wrap justify-start gap-2">
-            {["all", "APPROVED", "PROCESSING", "PENDING_EVIDENCE", "REJECTED", "SUBMITTED"].map((tab) => (
+        <Tabs defaultValue="all" className="space-y-8">
+          <TabsList className="bg-gray-100 p-1 rounded-md flex flex-wrap justify-start gap-3">
+            {["all", "SUBMITTED", "PENDING_EVIDENCE", "PROCESSING", "APPROVED", "REJECTED"].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
@@ -191,9 +176,9 @@ export default function Claims() {
           </TabsList>
 
           {/* Claims Table */}
-          {["all", "APPROVED", "PROCESSING", "PENDING_EVIDENCE", "REJECTED", "SUBMITTED"].map((status) => (
+          {["all", "SUBMITTED", "PENDING_EVIDENCE", "PROCESSING", "APPROVED", "REJECTED"].map((status) => (
             <TabsContent key={status} value={status}>
-              <Card className="shadow-lg">
+              <Card className="shadow-lg mt-6">
                 <CardHeader className="bg-gray-50">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg font-medium text-gray-900">
@@ -204,7 +189,7 @@ export default function Claims() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   {isLoading ? (
                     <div className="flex justify-center items-center h-64">
                       <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -222,6 +207,7 @@ export default function Claims() {
                             <TableHead className="px-4 py-3 text-left min-w-[120px]">Claim ID</TableHead>
                             <TableHead className="px-4 py-3 text-left min-w-[120px]">Policy ID</TableHead>
                             <TableHead className="px-4 py-3 text-left min-w-[120px]">Vehicle ID</TableHead>
+                            <TableHead className="px-4 py-3 text-left min-w-[120px]">Evidence</TableHead>
                             <TableHead className="px-4 py-3 text-left min-w-[120px]">Garage ID</TableHead>
                             <TableHead className="px-4 py-3 text-left min-w-[120px]">Bill ID</TableHead>
                             <TableHead className="px-4 py-3 text-left min-w-[100px]">Repaired</TableHead>
@@ -232,7 +218,7 @@ export default function Claims() {
                         <TableBody className="divide-y divide-gray-200">
                           {filterClaimsByStatus(status).map((claim) => (
                             <TableRow key={claim.claimId} className="hover:bg-gray-50">
-                              <TableCell className="px-4 py-4 text-sm font-medium truncate max-w-[150px]">
+                              <TableCell className="px-4 py-4 text-sm font-medium text-gray-900 truncate max-w-[150px]">
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger className="truncate">{claim.claimId}</TooltipTrigger>
@@ -253,6 +239,18 @@ export default function Claims() {
                                   <Tooltip>
                                     <TooltipTrigger className="truncate">{claim.vehicleId}</TooltipTrigger>
                                     <TooltipContent className="text-xs">{claim.vehicleId}</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </TableCell>
+                              <TableCell className="px-4 py-4 text-sm text-gray-500 truncate max-w-[150px]">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger className="truncate">
+                                      {claim.damageEvidence || "N/A"}
+                                    </TooltipTrigger>
+                                    <TooltipContent className="text-xs max-w-[300px] break-words">
+                                      {claim.damageEvidence || "No evidence provided"}
+                                    </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
                               </TableCell>
@@ -286,13 +284,15 @@ export default function Claims() {
                                         variant="outline"
                                         size="sm"
                                         className="h-8 text-xs border-gray-300 hover:bg-gray-50 px-2"
-                                        onClick={() => handleOpenClaimDetails(claim.claimId)}
+                                        onClick={() => handleOpenAddEvidence(claim.claimId)}
                                       >
-                                        <Info className="h-4 w-4 mr-2" />
-                                        View Details
+                                        <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        Add Evidence
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent className="text-xs">View claim details</TooltipContent>
+                                    <TooltipContent className="text-xs">Add evidence to claim</TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
                               </TableCell>
@@ -309,10 +309,14 @@ export default function Claims() {
         </Tabs>
 
         {selectedClaimId && (
-          <ClaimDetailsModal
+          <AddEvidenceModal
             claimId={selectedClaimId}
-            isOpen={!!selectedClaimId}
-            onClose={handleCloseClaimDetails}
+            isOpen={isAddEvidenceModalOpen}
+            onClose={handleCloseAddEvidence}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/claims"] });
+              addToast("Success", "Evidence added successfully!", "default");
+            }}
             onError={(message) => addToast("Error", message, "destructive")}
           />
         )}

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, date, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -100,16 +100,10 @@ export const insertPolicySchema = createInsertSchema(policies).pick({
 // Insurance claims
 export const claims = pgTable("claims", {
   id: serial("id").primaryKey(),
-  claimId: text("claim_id").notNull().unique(), // e.g., CLM-2023-0042
+  claimId: text("claim_id").notNull().unique(), // e.g., CLM-2025-1234
   policyId: text("policy_id").notNull().references(() => policies.policyId),
+  garageId: text("garage_id").notNull().references(() => garages.garageId),
   vehicleId: text("vehicle_id").notNull().references(() => vehicles.vehicleId),
-  incidentDate: date("incident_date").notNull(),
-  incidentType: text("incident_type").notNull(), // collision, theft, fire, vandalism, other
-  description: text("description").notNull(),
-  damageEstimate: integer("damage_estimate").notNull(), // Amount in ZMW
-  status: text("status").notNull(), // submitted, processing, approved, rejected, settled
-  createdAt: timestamp("created_at").notNull(),
-  evidence: jsonb("evidence"), // Links to evidence files or hashes
   blockIndex: integer("block_index"), // Reference to which block this claim is saved in
   transactionHash: text("transaction_hash"), // The transaction hash in the blockchain
 });
@@ -118,6 +112,44 @@ export const insertClaimSchema = createInsertSchema(claims).omit({
   id: true,
   blockIndex: true,
   transactionHash: true,
+});
+
+// Adjusters
+export const adjusters = pgTable("adjusters", {
+  id: serial("id").primaryKey(),
+  adjusterId: text("adjuster_id").notNull().unique(), // e.g., ADJ001
+  name: text("name").notNull(),
+});
+
+export const insertAdjusterSchema = createInsertSchema(adjusters).pick({
+  adjusterId: true,
+  name: true,
+});
+
+// Garages
+export const garages = pgTable("garages", {
+  id: serial("id").primaryKey(),
+  garageId: text("garage_id").notNull().unique(), // e.g., GAR001
+  garageName: text("garage_name").notNull(),
+  address: text("address").notNull(),
+  contactNumber: text("contact_number").notNull(),
+  specialization: text("specialization").notNull(),
+  garageStatus: text("garageStatus").notNull(), // UNDER_REVIEW, APPROVED, REJECTED
+});
+
+export const insertGarageSchema = createInsertSchema(garages).pick({
+  garageId: true,
+  garageName: true,
+  address: true,
+  contactNumber: true,
+  specialization: true,
+});
+
+// Adjustment reports
+export const insertAdjustmentReportSchema = z.object({
+  adjusterId: z.string().min(1, "Adjuster ID is required"),
+  assessmentReport: z.string().min(1, "Assessment report is required"),
+  repairCost: z.number().min(0, "Repair cost must be non-negative"),
 });
 
 // Define types for frontend usage
@@ -138,3 +170,11 @@ export type InsertPolicy = z.infer<typeof insertPolicySchema>;
 
 export type Claim = typeof claims.$inferSelect;
 export type InsertClaim = z.infer<typeof insertClaimSchema>;
+
+export type Adjuster = typeof adjusters.$inferSelect;
+export type InsertAdjuster = z.infer<typeof insertAdjusterSchema>;
+
+export type Garage = typeof garages.$inferSelect;
+export type InsertGarage = z.infer<typeof insertGarageSchema>;
+
+export type InsertAdjustmentReport = z.infer<typeof insertAdjustmentReportSchema>;
